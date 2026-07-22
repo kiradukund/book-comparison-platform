@@ -24,17 +24,18 @@ app.get('/api/search', async (req, res) => {
 
     let data;
     let attempts = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 4;
 
     while (attempts < maxAttempts) {
       attempts++;
       const response = await fetch(url);
       data = await response.json();
 
-      // if Google gave us a real error, wait a bit and try again
+      // if Google gave us a real error, wait longer each time before retrying
       if (data.error) {
-        console.log(`Attempt ${attempts} failed, retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const waitTime = attempts * 1000; // 1s, 2s, 3s, 4s
+        console.log(`Attempt ${attempts} failed, waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
         continue;
       }
 
