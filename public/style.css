@@ -25,7 +25,8 @@ h1 {
   padding: 0;
 }
 
-.section-header select {
+.section-header select,
+.section-header input {
   padding: 5px;
 }
 

@@ -4,14 +4,18 @@ const googleResultsDiv = document.getElementById('googleResults');
 const openLibraryResultsDiv = document.getElementById('openLibraryResults');
 const googleSort = document.getElementById('googleSort');
 const openLibrarySort = document.getElementById('openLibrarySort');
+const googleFilter = document.getElementById('googleFilter');
+const openLibraryFilter = document.getElementById('openLibraryFilter');
 
-// keep the last fetched results here so we can re-sort without calling the APIs again
+// keep the last fetched results here so we can re-sort/filter without calling the APIs again
 let lastGoogleBooks = [];
 let lastOpenLibraryBooks = [];
 
 searchButton.addEventListener('click', searchBooks);
 googleSort.addEventListener('change', () => renderGoogleResults(lastGoogleBooks));
 openLibrarySort.addEventListener('change', () => renderOpenLibraryResults(lastOpenLibraryBooks));
+googleFilter.addEventListener('input', () => renderGoogleResults(lastGoogleBooks));
+openLibraryFilter.addEventListener('input', () => renderOpenLibraryResults(lastOpenLibraryBooks));
 
 async function searchBooks() {
   const query = searchInput.value;
@@ -69,7 +73,17 @@ function renderGoogleResults(books) {
   if (books.length === 0) return;
 
   const sortValue = googleSort.value;
-  const sorted = [...books];
+  const filterText = googleFilter.value.toLowerCase();
+
+  let filtered = books;
+  if (filterText) {
+    filtered = books.filter(book => {
+      const categories = book.volumeInfo.categories || [];
+      return categories.join(' ').toLowerCase().includes(filterText);
+    });
+  }
+
+  const sorted = [...filtered];
 
   if (sortValue === 'title') {
     sorted.sort((a, b) => a.volumeInfo.title.localeCompare(b.volumeInfo.title));
@@ -78,6 +92,11 @@ function renderGoogleResults(books) {
   }
 
   googleResultsDiv.innerHTML = '';
+
+  if (sorted.length === 0) {
+    googleResultsDiv.innerHTML = 'No books match that filter.';
+    return;
+  }
 
   for (const book of sorted) {
     const info = book.volumeInfo;
@@ -103,7 +122,17 @@ function renderOpenLibraryResults(books) {
   if (books.length === 0) return;
 
   const sortValue = openLibrarySort.value;
-  const sorted = [...books];
+  const filterText = openLibraryFilter.value.toLowerCase();
+
+  let filtered = books;
+  if (filterText) {
+    filtered = books.filter(book => {
+      const languages = book.language || [];
+      return languages.join(' ').toLowerCase().includes(filterText);
+    });
+  }
+
+  const sorted = [...filtered];
 
   if (sortValue === 'title') {
     sorted.sort((a, b) => a.title.localeCompare(b.title));
@@ -112,6 +141,11 @@ function renderOpenLibraryResults(books) {
   }
 
   openLibraryResultsDiv.innerHTML = '';
+
+  if (sorted.length === 0) {
+    openLibraryResultsDiv.innerHTML = 'No books match that filter.';
+    return;
+  }
 
   for (const book of sorted) {
     const card = document.createElement('div');
