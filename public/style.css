@@ -1,0 +1,58 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+h1 {
+  text-align: center;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+#searchButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.book-card {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  width: 200px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.book-card img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.book-card h3 {
+  font-size: 16px;
+  margin: 10px 0 5px;
+}
+
+.book-card p {
+  font-size: 14px;
+  color: #555;
+}

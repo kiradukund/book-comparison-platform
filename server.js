@@ -4,6 +4,8 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static('public'));
+
 // test route so we know the server is alive
 app.get('/', (req, res) => {
   res.send('Server is running');
@@ -18,9 +20,31 @@ app.get('/api/search', async (req, res) => {
   }
 
   try {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${process.env.GOOGLE_BOOKS_API_KEY}&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+
+    let data;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      const response = await fetch(url);
+      data = await response.json();
+
+      // if Google gave us a real error, wait a bit and try again
+      if (data.error) {
+        console.log(`Attempt ${attempts} failed, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+
+      break;
+    }
+
+    if (data.error) {
+      return res.status(503).json({ error: 'Google Books API is not responding right now. Try again in a moment.' });
+    }
+
     res.json(data);
   } catch (err) {
     console.error(err);
