@@ -52,6 +52,25 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+// search route - talks to Open Library
+app.get('/api/search-openlibrary', async (req, res) => {
+  const query = req.query.q;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Missing search query' });
+  }
+
+  try {
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch from Open Library' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
