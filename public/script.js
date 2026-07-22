@@ -2,8 +2,16 @@ const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const googleResultsDiv = document.getElementById('googleResults');
 const openLibraryResultsDiv = document.getElementById('openLibraryResults');
+const googleSort = document.getElementById('googleSort');
+const openLibrarySort = document.getElementById('openLibrarySort');
+
+// keep the last fetched results here so we can re-sort without calling the APIs again
+let lastGoogleBooks = [];
+let lastOpenLibraryBooks = [];
 
 searchButton.addEventListener('click', searchBooks);
+googleSort.addEventListener('change', () => renderGoogleResults(lastGoogleBooks));
+openLibrarySort.addEventListener('change', () => renderOpenLibraryResults(lastOpenLibraryBooks));
 
 async function searchBooks() {
   const query = searchInput.value;
@@ -13,14 +21,30 @@ async function searchBooks() {
   googleResultsDiv.innerHTML = 'Loading...';
   openLibraryResultsDiv.innerHTML = 'Loading...';
 
-  // run both API calls at the same time instead of one after the other
   const [googleData, openLibraryData] = await Promise.all([
     fetchGoogleBooks(query),
     fetchOpenLibrary(query)
   ]);
 
-  displayGoogleResults(googleData);
-  displayOpenLibraryResults(openLibraryData);
+  if (googleData.error || !googleData.items) {
+    lastGoogleBooks = [];
+    googleResultsDiv.innerHTML = googleData.error
+      ? 'Google Books is temporarily unavailable. Open Library results are still shown below.'
+      : 'No results from Google Books.';
+  } else {
+    lastGoogleBooks = googleData.items;
+    renderGoogleResults(lastGoogleBooks);
+  }
+
+  if (openLibraryData.error || !openLibraryData.docs) {
+    lastOpenLibraryBooks = [];
+    openLibraryResultsDiv.innerHTML = openLibraryData.error
+      ? 'Open Library is temporarily unavailable.'
+      : 'No results from Open Library.';
+  } else {
+    lastOpenLibraryBooks = openLibraryData.docs;
+    renderOpenLibraryResults(lastOpenLibraryBooks);
+  }
 }
 
 async function fetchGoogleBooks(query) {
@@ -41,17 +65,21 @@ async function fetchOpenLibrary(query) {
   }
 }
 
-function displayGoogleResults(data) {
-  googleResultsDiv.innerHTML = '';
+function renderGoogleResults(books) {
+  if (books.length === 0) return;
 
-  if (data.error || !data.items || data.items.length === 0) {
-    googleResultsDiv.innerHTML = data.error
-      ? 'Google Books is temporarily unavailable. Open Library results are still shown below.'
-      : 'No results from Google Books.';
-    return;
+  const sortValue = googleSort.value;
+  const sorted = [...books];
+
+  if (sortValue === 'title') {
+    sorted.sort((a, b) => a.volumeInfo.title.localeCompare(b.volumeInfo.title));
+  } else if (sortValue === 'pages') {
+    sorted.sort((a, b) => (b.volumeInfo.pageCount || 0) - (a.volumeInfo.pageCount || 0));
   }
 
-  for (const book of data.items) {
+  googleResultsDiv.innerHTML = '';
+
+  for (const book of sorted) {
     const info = book.volumeInfo;
 
     const card = document.createElement('div');
@@ -71,17 +99,21 @@ function displayGoogleResults(data) {
   }
 }
 
-function displayOpenLibraryResults(data) {
-  openLibraryResultsDiv.innerHTML = '';
+function renderOpenLibraryResults(books) {
+  if (books.length === 0) return;
 
-  if (data.error || !data.docs || data.docs.length === 0) {
-    openLibraryResultsDiv.innerHTML = data.error
-      ? 'Open Library is temporarily unavailable.'
-      : 'No results from Open Library.';
-    return;
+  const sortValue = openLibrarySort.value;
+  const sorted = [...books];
+
+  if (sortValue === 'title') {
+    sorted.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortValue === 'editions') {
+    sorted.sort((a, b) => (b.edition_count || 0) - (a.edition_count || 0));
   }
 
-  for (const book of data.docs) {
+  openLibraryResultsDiv.innerHTML = '';
+
+  for (const book of sorted) {
     const card = document.createElement('div');
     card.className = 'book-card';
 

@@ -15,10 +15,24 @@
     <button id="searchButton">Search</button>
   </div>
 
-  <h2>From Google Books</h2>
+  <div class="section-header">
+    <h2>From Google Books</h2>
+    <select id="googleSort">
+      <option value="none">Sort by...</option>
+      <option value="title">Title (A-Z)</option>
+      <option value="pages">Page Count</option>
+    </select>
+  </div>
   <div id="googleResults" class="results"></div>
 
-  <h2>From Open Library</h2>
+  <div class="section-header">
+    <h2>From Open Library</h2>
+    <select id="openLibrarySort">
+      <option value="none">Sort by...</option>
+      <option value="title">Title (A-Z)</option>
+      <option value="editions">Edition Count</option>
+    </select>
+  </div>
   <div id="openLibraryResults" class="results"></div>
 
   <script src="script.js"></script>

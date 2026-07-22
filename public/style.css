@@ -10,10 +10,23 @@ h1 {
   text-align: center;
 }
 
-h2 {
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 30px;
   border-bottom: 2px solid #ccc;
   padding-bottom: 5px;
+}
+
+.section-header h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.section-header select {
+  padding: 5px;
 }
 
 .search-bar {
