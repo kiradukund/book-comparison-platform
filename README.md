@@ -82,7 +82,15 @@ Then open `http://localhost:3000` in your browser. Type a book title in the sear
 
 ## Deployment
 
-_(to be filled in once deployment to Web01/Web02 and the load balancer is finished — this section will explain how the app was copied to both servers, how Nginx is set up as a reverse proxy in front of the Node app, and how I tested that the load balancer actually splits traffic between the two servers)_
+The app is deployed on two AWS servers, Web01 and Web02, sitting behind a load balancer (HAProxy) that I set up earlier in my DevOps coursework. The domain is kiralekund.tech.
+
+On each server I installed Node.js 20 and git, cloned the repo from GitHub, ran `npm install`, and created a `.env` file directly on the server with my Google Books API key (it's gitignored so it never comes through GitHub, has to be added manually on each machine).
+
+The app itself runs on port 3000 on both servers, but that port isn't open to the outside world, and it shouldn't be — only ports 80 and 443 are open. So I set up Nginx as a reverse proxy on both Web01 and Web02, listening on port 80 and quietly forwarding requests to the Node app on port 3000. This also matches what the load balancer expects, since HAProxy was already configured to send traffic to each server on port 80.
+
+To keep the app running permanently instead of just while a terminal window is open, I used pm2 to run it as a background process, and set it up to auto-restart if either server ever reboots.
+
+To test that the load balancer actually distributes traffic instead of just hitting one server, I checked HAProxy's logs directly:
 
 ## Challenges
 
