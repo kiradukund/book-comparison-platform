@@ -1,3 +1,6 @@
+// Book Comparison Platform
+// Built by IRADUKUNDA CYUSA Kevin
+// Software Engineering student, ALU
 require('dotenv').config();
 const express = require('express');
 const app = express();
@@ -26,7 +29,7 @@ app.get('/api/search', async (req, res) => {
     let attempts = 0;
     const maxAttempts = 4;
 
-    while (attempts < maxAttempts) {
+    while (attempts < maxAttempts) {h
       attempts++;
       const response = await fetch(url);
       data = await response.json();
