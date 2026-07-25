@@ -34,13 +34,13 @@ For the backend I used Node.js with Express. Express made it simple to set up ro
 
 **Google Books API**
 - Purpose: main source of book data — titles, authors, page counts, cover images
-- Docs: _(link placeholder)_
+- Docs: https://developers.google.com/books
 - Needs an API key: yes
 - What it gives: title, authors, publisher, page count, cover image, categories
 
 **Open Library API**
 - Purpose: second source, mainly used to compare edition counts and check different language versions
-- Docs: _(link placeholder)_
+- Docs: https://openlibrary.org/developers/api
 - Needs an API key: no
 - What it gives: title, authors, edition count, first publish year, language, cover image
 
@@ -53,6 +53,7 @@ book-comparison-platform/
 ├── package.json
 ├── .env                → holds my Google Books API key (not committed)
 ├── .gitignore
+├── LICENSE
 └── public/
     ├── index.html      → the search page
     ├── style.css       → styling for the page and book cards
@@ -83,17 +84,34 @@ npm run dev
 
 Then open `http://localhost:3000` in your browser. Type a book title in the search box and press Search.
 
+## API Key (for grading access)
+
+GOOGLE_BOOKS_API_KEY=AIzaSyA7pnCTYHTlqWKqSGSvy_yPMTblTcFfPPo
+
+This key is restricted to only the Google Books API in Google Cloud Console, so it can't be used for anything beyond searching books. It's included here for grading access, separate from the Environment Variables section above, which explains how the app would normally be run with your own key.
+
 ## Deployment
 
 The app is deployed on two AWS servers, Web01 and Web02, sitting behind a load balancer (HAProxy) that I set up earlier in my DevOps coursework. The domain is kiralekund.tech.
 
 On each server I installed Node.js 20 and git, cloned the repo from GitHub, ran `npm install`, and created a `.env` file directly on the server with my Google Books API key (it's gitignored so it never comes through GitHub, has to be added manually on each machine).
 
-The app itself runs on port 3000 on both servers, but that port isn't open to the outside world, and it shouldn't be — only ports 80 and 443 are open. So I set up Nginx as a reverse proxy on both Web01 and Web02, listening on port 80 and quietly forwarding requests to the Node app on port 3000. This also matches what the load balancer expects, since HAProxy was already configured to send traffic to each server on port 80.
+The app itself runs on port 3000 on both servers, but that port isn't open to the outside world, and it shouldn't be — only ports 80 and 443 are open. So I set up Nginx as a reverse proxy on both Web01 and Web02, listening on port 80 and quietly forwarding requests to the Node app on port 3000. This matches what the load balancer expects, since HAProxy was already configured to send traffic to each server on port 80.
 
 To keep the app running permanently instead of just while a terminal window is open, I used pm2 to run it as a background process, and set it up to auto-restart if either server ever reboots.
 
-To test that the load balancer actually distributes traffic instead of just hitting one server, I checked HAProxy's logs directly:
+To test that the load balancer actually distributes traffic instead of just hitting one server, I checked HAProxy's logs directly on the load balancer:
+
+sudo journalctl -u haproxy --no-pager | tail -20
+
+The output showed requests alternating between the two backends, for example:
+
+...https_front~ http_back/7084-web-01 0/0/0/2/2 200 806 ... "GET / HTTP/1.1"
+...https_front~ http_back/7084-web-02 1/0/0/2/3 200 5667 ... "GET /script.js HTTP/1.1"
+...https_front~ http_back/7084-web-01 0/0/0/2/2 200 1344 ... "GET /style.css HTTP/1.1"
+...https_front~ http_back/7084-web-02 0/0/0/2/2 404 413 ... "GET /favicon.ico HTTP/1.1"
+
+Each line switches between web-01 and web-02, which confirms it's round-robin balancing between both servers rather than favoring one. The 404 lines are just the browser automatically requesting a favicon that doesn't exist, unrelated to the app itself.
 
 ## Challenges
 
@@ -103,9 +121,15 @@ The two APIs also don't agree on much. Google Books gives page counts, Open Libr
 
 The most annoying problem was that Google's Books API kept returning random 503 errors, completely unrelated to anything in my own code. I confirmed this by hitting the API directly in the browser and getting the same error, so it wasn't a bug on my end. I ended up adding retry logic with increasing wait times between attempts, and a clear fallback message if it still fails after a few tries, so the app doesn't just break or show a blank page when that happens.
 
+Deployment had its own separate problems. Neither Web01 nor Web02 had git or Node installed by default, so I had to install both manually before I could even clone the repo. Neither server had nano or vim either, so instead of using a text editor to write config files, I used echo and cat with heredocs directly in the terminal to create the .env file and rewrite the Nginx config. I also assumed Nginx read from sites-available/default, but it turned out this server's actual active config was sites-enabled/default as a regular file, not a symlink like I expected — editing the wrong file meant my changes weren't doing anything until I found that out.
+
 ## Lessons Learned
 
-I learned that external APIs are not something you can fully control or trust to always work, so error handling isn't optional — it's part of actually building something usable. I also learned that combining two APIs means writing separate logic for each one rather than trying to force them into one shared format, since the data just doesn't line up cleanly.
+External APIs aren't something you fully control, even the well-documented ones — Google's Books API returned 503 errors on and off throughout building this, for no reason connected to my code, so error handling wasn't optional, it was necessary for the app to actually be usable.
+
+Combining two APIs means writing separate logic for each one instead of forcing them into one shared format — Google Books and Open Library don't return the same fields, so the sort and filter options had to be built separately per section rather than shared.
+
+On the deployment side, I learned not to assume a server's configuration matches what tutorials expect — checking sites-enabled versus sites-available directly with ls saved me from editing a file that Nginx wasn't even reading. I also learned to keep git commits local until I'm ready to push, so the commit history reflects when work actually happened rather than one large dump at the end.
 
 ## Future Improvements
 
@@ -122,4 +146,10 @@ I learned that external APIs are not something you can fully control or trust to
 
 ## License
 
-MIT
+MIT — see the LICENSE file in this repo.
+
+## Author
+
+IRADUKUNDA CYUSA Kevin
+k.iradukund@alustudent.com
+Software Engineering student at ALU
