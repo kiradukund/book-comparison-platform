@@ -1,7 +1,7 @@
 # Book Comparison Platform
 
 **Live site:** https://www.kiralekund.tech
-**Demo video:** PASTE_DEMO_VIDEO_LINK_HERE
+**Demo video:** https://drive.google.com/file/d/18wc_PAmtUj3GgyZARpA8ZSTZnxwYwjFa/view?usp=sharing
 
 This is a small web app that lets you search for a book and see results from two different sources at once — Google Books and Open Library. Instead of trusting one API's version of a book's details, you get both side by side and can compare things like page count and how many editions exist. I built this for my Software Engineering "Playing Around with APIs" assignment.
 
