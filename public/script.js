@@ -11,6 +11,13 @@ const openLibraryFilter = document.getElementById('openLibraryFilter');
 let lastGoogleBooks = [];
 let lastOpenLibraryBooks = [];
 
+// turns text into safe HTML so book titles/authors from the APIs can't break the page
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
 searchButton.addEventListener('click', searchBooks);
 googleSort.addEventListener('change', () => renderGoogleResults(lastGoogleBooks));
 openLibrarySort.addEventListener('change', () => renderOpenLibraryResults(lastOpenLibraryBooks));
@@ -70,8 +77,6 @@ async function fetchOpenLibrary(query) {
 }
 
 function renderGoogleResults(books) {
-  if (books.length === 0) return;
-
   const sortValue = googleSort.value;
   const filterText = googleFilter.value.toLowerCase();
 
@@ -91,10 +96,13 @@ function renderGoogleResults(books) {
     sorted.sort((a, b) => (b.volumeInfo.pageCount || 0) - (a.volumeInfo.pageCount || 0));
   }
 
+  // always clear first, so a new search with fewer/zero results doesn't leave old cards behind
   googleResultsDiv.innerHTML = '';
 
   if (sorted.length === 0) {
-    googleResultsDiv.innerHTML = 'No books match that filter.';
+    googleResultsDiv.innerHTML = books.length === 0
+      ? 'No results from Google Books.'
+      : 'No books match that filter.';
     return;
   }
 
@@ -108,8 +116,8 @@ function renderGoogleResults(books) {
     card.className = 'book-card';
 
     const cover = info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/128x190?text=No+Cover';
-    const author = info.authors ? info.authors.join(', ') : 'Unknown author';
-    const title = info.title || 'Untitled';
+    const author = escapeHtml(info.authors ? info.authors.join(', ') : 'Unknown author');
+    const title = escapeHtml(info.title || 'Untitled');
 
     card.innerHTML = `
       <img src="${cover}" alt="${title}">
@@ -123,8 +131,6 @@ function renderGoogleResults(books) {
 }
 
 function renderOpenLibraryResults(books) {
-  if (books.length === 0) return;
-
   const sortValue = openLibrarySort.value;
   const filterText = openLibraryFilter.value.toLowerCase();
 
@@ -144,10 +150,13 @@ function renderOpenLibraryResults(books) {
     sorted.sort((a, b) => (b.edition_count || 0) - (a.edition_count || 0));
   }
 
+  // always clear first, so a new search with fewer/zero results doesn't leave old cards behind
   openLibraryResultsDiv.innerHTML = '';
 
   if (sorted.length === 0) {
-    openLibraryResultsDiv.innerHTML = 'No books match that filter.';
+    openLibraryResultsDiv.innerHTML = books.length === 0
+      ? 'No results from Open Library.'
+      : 'No books match that filter.';
     return;
   }
 
@@ -158,11 +167,12 @@ function renderOpenLibraryResults(books) {
     const cover = book.cover_i
       ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
       : 'https://via.placeholder.com/128x190?text=No+Cover';
-    const author = book.author_name ? book.author_name.join(', ') : 'Unknown author';
+    const author = escapeHtml(book.author_name ? book.author_name.join(', ') : 'Unknown author');
+    const title = escapeHtml(book.title || 'Untitled');
 
     card.innerHTML = `
-      <img src="${cover}" alt="${book.title}">
-      <h3>${book.title}</h3>
+      <img src="${cover}" alt="${title}">
+      <h3>${title}</h3>
       <p>${author}</p>
       <p>${book.edition_count ? book.edition_count + ' editions' : ''}</p>
     `;

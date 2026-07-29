@@ -80,8 +80,33 @@ app.get('/api/search-openlibrary', async (req, res) => {
 
   try {
     const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`;
-    const response = await fetch(url);
-    const data = await response.json();
+
+    let data;
+    let attempts = 0;
+    const maxAttempts = 3;
+    let failed = false;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        failed = true;
+        const waitTime = attempts * 1000;
+        console.log(`Open Library attempt ${attempts} failed with status ${response.status}, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      data = await response.json();
+      failed = false;
+      break;
+    }
+
+    if (failed || !data) {
+      return res.status(503).json({ error: 'Open Library is not responding right now. Try again in a moment.' });
+    }
+
     res.json(data);
   } catch (err) {
     console.error(err);

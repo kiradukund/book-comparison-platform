@@ -1,7 +1,7 @@
 {
   "name": "book-comparison-platform",
   "version": "1.0.0",
-  "description": "",
+  "description": "","license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "IRADUKUNDA CYUSA Kevin <k.iradukund@alustudent.com>",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "dotenv": "^17.4.2",
