@@ -96,9 +96,7 @@ Then open `http://localhost:3000` in your browser. Type a book title in the sear
 
 ## API Key (for grading access)
 
-GOOGLE_BOOKS_API_KEY=AIzaSyA7pnCTYHTlqWKqSGSvy_yPMTblTcFfPPo
-
-This key is restricted to only the Google Books API in Google Cloud Console, so it can't be used for anything beyond searching books. It's included here for grading access, separate from the Environment Variables section above, which explains how the app would normally be run with your own key.
+The Google Books API key used for grading is provided separately in the assignment submission comment, not committed here, to keep it out of the public repository.
 
 ## Deployment
 

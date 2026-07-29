@@ -29,7 +29,7 @@ app.get('/api/search', async (req, res) => {
     let attempts = 0;
     const maxAttempts = 4;
 
-    while (attempts < maxAttempts) {h
+    while (attempts < maxAttempts) {
       attempts++;
       const response = await fetch(url);
       data = await response.json();
