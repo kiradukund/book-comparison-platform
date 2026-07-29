@@ -101,15 +101,19 @@ function renderGoogleResults(books) {
   for (const book of sorted) {
     const info = book.volumeInfo;
 
+    // skip any item that's missing the core data we need instead of crashing the whole render
+    if (!info) continue;
+
     const card = document.createElement('div');
     card.className = 'book-card';
 
-    const cover = info.imageLinks ? info.imageLinks.thumbnail : '';
+    const cover = info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/128x190?text=No+Cover';
     const author = info.authors ? info.authors.join(', ') : 'Unknown author';
+    const title = info.title || 'Untitled';
 
     card.innerHTML = `
-      <img src="${cover}" alt="${info.title}">
-      <h3>${info.title}</h3>
+      <img src="${cover}" alt="${title}">
+      <h3>${title}</h3>
       <p>${author}</p>
       <p>${info.pageCount ? info.pageCount + ' pages' : ''}</p>
     `;
@@ -153,7 +157,7 @@ function renderOpenLibraryResults(books) {
 
     const cover = book.cover_i
       ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
-      : '';
+      : 'https://via.placeholder.com/128x190?text=No+Cover';
     const author = book.author_name ? book.author_name.join(', ') : 'Unknown author';
 
     card.innerHTML = `
